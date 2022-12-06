@@ -4,29 +4,60 @@ import future.keywords.in
 
 default allow = false
 
-default organizer := false
+default is_user_organizer := false
 
-default speaker := false
+default is_user_speaker := false
 
-default event_user := false
+default is_user_event_user := false
 
-delete_permissions := [organizer, speaker]
+default text_qna_creator := false
 
-create_permissions := [organizer, speaker]
+default text_qna_speaker := false
 
-get_permissions := [organizer, speaker, event_user]
+default text_qna_organizer := false
 
-organizer {
+
+delete_permissions := [is_user_organizer, is_user_speaker, text_qna_speaker, text_qna_organizer, text_qna_creator]
+
+create_permissions := [is_user_event_user]
+
+update_permission := [text_qna_creator]
+
+get_permissions := [is_user_organizer, is_user_speaker, text_qna_organizer, text_qna_speaker, is_user_event_user]
+
+answering_permissions := [is_user_organizer, is_user_speaker, text_qna_organizer, text_qna_speaker]
+̀
+is_user_organizer {
 	organization := input.organization_id
 	user := input.user_id
-
 	data.organizations[organization].members[user].active == true
 }
 
-speaker {
-	broadcast := input.organization_id
+is_user_speaker {
+	broadcast := input.broadcast_id
 	user := input.user_id
+	data.broadcasts[broadcast].speakers[user].active == true
+}
 
+text_qna_creator {
+	user_id := input.user_id
+	textqna_id := input.textqna_id
+	is_user_event_user == true
+	data.textqnas[textqna_id].owner[user_id].active == true
+}
+
+text_qna_organizer {
+	textqna_id := input.textqna_id
+	user := input.user_id
+	broadcast := data.textqnas[textqna_id].broadcast
+	organization := data.broadcasts[broadcast].organization
+	data.organizations[organization].members[user].active == true
+}
+
+text_qna_speaker {
+	textqna_id := input.textqna_id
+	user := input.user_id
+	broadcast := data.textqnas[textqna_id].broadcast
 	data.broadcasts[broadcast].speakers[user].active == true
 }
 
@@ -39,19 +70,24 @@ event_user {
 has_create_permissions {
 	some has_permission in create_permissions
 	has_permission
-    input.action == "CREATE"
+	input.action == "CREATE"
 }
 
 has_delete_permissions {
 	some has_permission in delete_permissions
 	has_permission
-    input.action == "DELETE"
+	input.action == "DELETE"
 }
 
 has_get_permissions {
 	some has_permission in get_permissions
 	has_permission
-    input.action == "READ"
+	input.action == "READ"
+}
+
+has_answering_permission {
+	some has_permission in answering_permissions
+	has_permission
 }
 
 allow {
@@ -69,4 +105,13 @@ allow {
 	has_delete_permissions
 }
 
+allow {
+	input.path == "upvote"
+	some has_permission in get_permissions
+    has_permission
+}
 
+allow {
+	input.path == "answer"
+    has_answering_permission
+}
