@@ -10,23 +10,26 @@ default is_user_speaker := false
 
 default is_user_event_user := false
 
+default is_textqna_event_user := false
+
+default is_broadcast_event_user := false 
+
 default text_qna_creator := false
 
 default text_qna_speaker := false
 
 default text_qna_organizer := false
 
-
 delete_permissions := [is_user_organizer, is_user_speaker, text_qna_speaker, text_qna_organizer, text_qna_creator]
 
-create_permissions := [is_user_event_user]
+create_permissions := [is_user_event_user, is_broadcast_event_user]
 
 update_permission := [text_qna_creator]
 
-get_permissions := [is_user_organizer, is_user_speaker, text_qna_organizer, text_qna_speaker, is_user_event_user]
+get_permissions := [is_broadcast_event_user, is_textqna_event_user, is_user_organizer, is_user_speaker, text_qna_organizer, text_qna_speaker, is_user_event_user]
 
 answering_permissions := [is_user_organizer, is_user_speaker, text_qna_organizer, text_qna_speaker]
-̀
+
 is_user_organizer {
 	organization := input.organization_id
 	user := input.user_id
@@ -42,7 +45,6 @@ is_user_speaker {
 text_qna_creator {
 	user_id := input.user_id
 	textqna_id := input.textqna_id
-	is_user_event_user == true
 	data.textqnas[textqna_id].owner[user_id].active == true
 }
 
@@ -61,10 +63,26 @@ text_qna_speaker {
 	data.broadcasts[broadcast].speakers[user].active == true
 }
 
-event_user {
+is_user_event_user {
 	user_id := input.user_id
-	event_id := input.event_id
+	event := input.event_id
+	data.events[event].members[user_id].blocked == false
+}
+
+is_broadcast_event_user {
+	user_id := input.user_id
+	broadcast_id := input.broadcast_id
+    event_id := data.broadcasts[broadcast_id].event
 	data.events[event_id].members[user_id].blocked == false
+}
+
+is_textqna_event_user {
+	user_id := input.user_id
+    text_qna_id := input.textqna_id
+	broadcast_id := data.textqnas[text_qna_id].broadcast
+    event_id := data.broadcasts[broadcast_id].event
+	result := data.events[event_id].members[user_id].blocked
+    result == false
 }
 
 has_create_permissions {
@@ -108,7 +126,8 @@ allow {
 allow {
 	input.path == "upvote"
 	some has_permission in get_permissions
-    has_permission
+	has_permission
+	input.action == "CREATE"
 }
 
 allow {
