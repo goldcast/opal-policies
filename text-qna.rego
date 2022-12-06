@@ -61,7 +61,7 @@ allow {
 }
 
 allow {
-	input.action == "GET"
+	input.action == "READ"
 	input.path == "text_qna"
 	has_get_permissions == true
 }
