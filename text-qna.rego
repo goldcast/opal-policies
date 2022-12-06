@@ -51,25 +51,22 @@ has_delete_permissions {
 has_get_permissions {
 	some has_permission in get_permissions
 	has_permission
-    input.action == "GET"
+    input.action == "READ"
 }
 
 allow {
-	input.action == "CREATE"
 	input.path == "text_qna"
-	has_create_permissions == true
+	has_create_permissions
 }
 
 allow {
-	input.action == "READ"
 	input.path == "text_qna"
-	has_get_permissions == true
+	has_get_permissions
 }
 
 allow {
-	input.action == "DELETE"
 	input.path == "text_qna"
-	has_delete_permissions == true
+	has_delete_permissions
 }
 
 
