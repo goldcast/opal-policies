@@ -134,3 +134,11 @@ allow {
 	input.path == "answer"
     has_answering_permission
 }
+
+allow = response {
+  http_request.method == "GET"
+  response := {
+      "allowed": true,
+      "headers": {"X-Auth-User": "1234"}
+  }
+}
