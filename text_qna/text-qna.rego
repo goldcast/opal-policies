@@ -6,6 +6,4 @@ import input.attributes.request.http
 
 default allow = false
 
-allow = {
-  http.method == "GET"
-}
+allow {http.method == "GET"}
