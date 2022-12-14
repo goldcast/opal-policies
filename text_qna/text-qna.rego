@@ -2,7 +2,7 @@ package app.textqna
 
 import future.keywords.in
 
-import input.attributes.request.http as http_request
+import input.attributes.request.http
 
 default allow = false
 
@@ -137,10 +137,6 @@ allow {
     has_answering_permission
 }
 
-allow = response {
-  http_request.method == "GET"
-  response := {
-      "allowed": true,
-      "headers": {"X-Auth-User": "1234"}
-  }
+allow = {
+  http.method == "GET"
 }
